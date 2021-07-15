@@ -16,8 +16,8 @@ from dataclasses_json import DataClassJsonMixin, config
 # fmt: off
 QUERY: List[str] = ["""
 query renderCSS($ssml: String!, $css: String!) {
-  result: callApplyVoiceCSS(css: $css, ssml: $ssml) {
-    ssml: result
+  result: callApplyVoiceCSS(voice_css: $css, styled_ssml: $ssml) {
+    ssml
   }
 }
 

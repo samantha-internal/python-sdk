@@ -16,8 +16,10 @@ from dataclasses_json import DataClassJsonMixin, config
 # fmt: off
 QUERY: List[str] = ["""
 query speechToText($input: String!) {
-  result: callSpeechToText(input: $input) {
-    transcript: result
+  result: callSpeechToText(audioB64: $input) {
+    alternatives {
+      transcript
+    }
   }
 }
 
@@ -30,13 +32,17 @@ class speechToText:
     class speechToTextData(DataClassJsonMixin):
         @dataclass(frozen=True)
         class STTResult(DataClassJsonMixin):
-            transcript: Optional[str]
+            @dataclass(frozen=True)
+            class TextAlternative(DataClassJsonMixin):
+                transcript: Optional[str]
 
-        result: STTResult
+            alternatives: Optional[List[TextAlternative]]
+
+        result: Optional[List[STTResult]]
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str) -> speechToTextData.STTResult:
+    def execute(cls, client: Client, input: str) -> List[Optional[speechToTextData.STTResult]]:
         variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
@@ -47,7 +53,7 @@ class speechToText:
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str) -> speechToTextData.STTResult:
+    async def execute_async(cls, client: Client, input: str) -> List[Optional[speechToTextData.STTResult]]:
         variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(

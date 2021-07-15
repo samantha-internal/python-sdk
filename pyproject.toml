@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "whitehead_sdk"
-version = "0.2.21"
+version = "0.1.0"
 description = "Whitehead SDK"
 authors = ["Dmitry Paramonov <asmatic075@gmail.com>"]
 license = "ISC"
@@ -10,7 +10,7 @@ readme = "README.md"
 codegen = "scripts.codegen:main"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = ">=3.6.1,<4.0"
 requests = "^2.25.1"
 cryptography = "^3.4.6"
 gql = {version = "3.0.0a5", extras = ["all"], allow-prereleases = true}

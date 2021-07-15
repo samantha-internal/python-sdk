@@ -16,8 +16,8 @@ from dataclasses_json import DataClassJsonMixin, config
 # fmt: off
 QUERY: List[str] = ["""
 query textToSpeech($input: String!) {
-  result: callTextToSpeech(input: $input) {
-    audioBase64: result
+  result: callTextToSpeech(text: $input) {
+    audioB64
   }
 }
 
@@ -30,7 +30,7 @@ class textToSpeech:
     class textToSpeechData(DataClassJsonMixin):
         @dataclass(frozen=True)
         class TTSResult(DataClassJsonMixin):
-            audioBase64: Optional[str]
+            audioB64: Optional[str]
 
         result: Optional[TTSResult]
 

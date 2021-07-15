@@ -1,0 +1,3 @@
+[submodule "whitehead_graphql"]
+	path = whitehead_graphql
+	url = https://github.com/whitehead-ai/graphql
