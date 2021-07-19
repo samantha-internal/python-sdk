@@ -1,20 +1,9 @@
 import os
-import fcntl
 import hashlib
 import tempfile
+import portalocker
 from contextlib import contextmanager, suppress
 from datetime import datetime
-
-
-@contextmanager
-def file_lock(fd, cmd):
-    try:
-        fcntl.lockf(fd, cmd)
-        yield
-    except IOError:
-        yield
-    finally:
-        fcntl.lockf(fd, fcntl.LOCK_UN)
 
 
 class TokenCache:
@@ -34,13 +23,11 @@ class TokenCache:
 
     def read(self):
         with suppress(FileNotFoundError):
-            with open(self.cache_path, "r") as f:
-                with file_lock(f, fcntl.LOCK_SH):
-                    return f.read()
+            with portalocker.Lock(self.cache_path, "r") as f:
+                return f.read()
 
     def write(self, data):
-        with open(self.cache_path, "a") as f:
-            with file_lock(f, fcntl.LOCK_EX):
-                f.seek(0)
-                f.truncate(0)
-                f.write(data)
+        with portalocker.Lock(self.cache_path, "a") as f:
+            f.seek(0)
+            f.truncate(0)
+            f.write(data)

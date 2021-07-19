@@ -1,6 +1,7 @@
 from gql.client import Client
 from gql.transport.aiohttp import AIOHTTPTransport
 from . import config, utils, token_cache
+from .exceptions import AuthError
 
 
 def Whitehead(api_key, developer_id):
@@ -12,6 +13,8 @@ def Whitehead(api_key, developer_id):
     if not jwt_token:
         exchange_token, nonce = utils.create_exchange_token(api_key)
         auth_data = utils.request_jwt(developer_id, exchange_token)
+        if auth_data.get("enc_token") is None:
+            raise AuthError(auth_data.get("error"))
         jwt_token = utils.decrypt_jwt(auth_data, api_key, nonce)
         cache.write(jwt_token)
 
