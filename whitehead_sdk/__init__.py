@@ -1,10 +1,10 @@
-from gql.client import Client
 from gql.transport.aiohttp import AIOHTTPTransport
 from . import config, utils, token_cache
 from .exceptions import AuthError
+from .wrappers import GraphqlClient
 
 
-def Whitehead(api_key, developer_id):
+def authenticate(api_key: str, developer_id: int) -> GraphqlClient:
     """
     Get the graphql client instance
     """
@@ -18,6 +18,7 @@ def Whitehead(api_key, developer_id):
         jwt_token = utils.decrypt_jwt(auth_data, api_key, nonce)
         cache.write(jwt_token)
 
-    transport = AIOHTTPTransport(url=config.API_ENDPOINT, headers={"Authorization": f"Bearer {jwt_token}"})
-    return Client(transport=transport, fetch_schema_from_transport=True)
-
+    transport = AIOHTTPTransport(
+        url=config.API_ENDPOINT, headers={"Authorization": f"Bearer {jwt_token}"}
+    )
+    return GraphqlClient(transport=transport, fetch_schema_from_transport=True)
