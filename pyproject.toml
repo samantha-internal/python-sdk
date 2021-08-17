@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "whitehead_sdk"
-version = "0.1.0"
+version = "0.2.0-alpha.1"
 description = "Whitehead SDK"
 authors = ["Dmitry Paramonov <asmatic075@gmail.com>"]
 license = "ISC"
