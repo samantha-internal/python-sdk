@@ -4,14 +4,11 @@ from gql.client import Client
 from . import api
 
 
-def wrapper(self):
-    def decor(func):
-        def inner(*args, **kwargs):
-            return func(self, *args, **kwargs)
+def wrapper(self, func):    
+    def inner(*args, **kwargs):
+        return func(self, *args, **kwargs)
 
-        return inner
-
-    return decor
+    return inner
 
 
 class GraphqlClient(Client):
@@ -26,6 +23,6 @@ class GraphqlClient(Client):
 
     def __getattr__(self, name):
         try:
-            return wrapper(self)(self._api_map[name])
+            return wrapper(self, self._api_map[name])
         except KeyError:
             raise AttributeError(name)
