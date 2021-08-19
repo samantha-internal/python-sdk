@@ -15,11 +15,11 @@ from dataclasses_json import DataClassJsonMixin, config
 
 # fmt: off
 QUERY: List[str] = ["""
-query measureSimilarity($input: String!, $candidates: [String!]!) {
-  result: callMeasureSimilarity(input: $input, candidates: $candidates) {
-    scores: result {
-      score
+query similarity($input: String!, $candidates: [String!]!) {
+  callSimilarity(input: $input, candidates: $candidates) {
+    result {
       candidate
+      score
     }
   }
 }
@@ -28,38 +28,38 @@ query measureSimilarity($input: String!, $candidates: [String!]!) {
 ]
 
 
-class measureSimilarity:
+class similarity:
     @dataclass(frozen=True)
-    class measureSimilarityData(DataClassJsonMixin):
+    class similarityData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class SentenceSimilarityScores(DataClassJsonMixin):
+        class SimilarityResult(DataClassJsonMixin):
             @dataclass(frozen=True)
             class PairSimilarity(DataClassJsonMixin):
-                score: Optional[Number]
                 candidate: Optional[str]
+                score: Optional[Number]
 
-            scores: Optional[List[PairSimilarity]]
+            result: List[PairSimilarity]
 
-        result: Optional[SentenceSimilarityScores]
+        callSimilarity: Optional[SimilarityResult]
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str, candidates: List[str] = []) -> Optional[measureSimilarityData.SentenceSimilarityScores]:
+    def execute(cls, client: Client, input: str, candidates: List[str] = []) -> Optional[similarityData.SimilarityResult]:
         variables: Dict[str, Any] = {"input": input, "candidates": candidates}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.measureSimilarityData.from_dict(response_text)
-        return res.result
+        res = cls.similarityData.from_dict(response_text)
+        return res.callSimilarity
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str, candidates: List[str] = []) -> Optional[measureSimilarityData.SentenceSimilarityScores]:
+    async def execute_async(cls, client: Client, input: str, candidates: List[str] = []) -> Optional[similarityData.SimilarityResult]:
         variables: Dict[str, Any] = {"input": input, "candidates": candidates}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.measureSimilarityData.from_dict(response_text)
-        return res.result
+        res = cls.similarityData.from_dict(response_text)
+        return res.callSimilarity

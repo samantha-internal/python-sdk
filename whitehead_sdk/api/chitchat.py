@@ -18,8 +18,8 @@ from .input.turn import Turn
 # fmt: off
 QUERY: List[str] = ["""
 query chitchat($input: String!, $history: [Turn!]!) {
-  result: callChitchat(history: $history, input: $input) {
-    reply: result
+  callChitchat(input: $input, history: $history) {
+    result
   }
 }
 
@@ -31,29 +31,29 @@ class chitchat:
     @dataclass(frozen=True)
     class chitchatData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class ChitchatResponse(DataClassJsonMixin):
-            reply: Optional[str]
+        class ChitchatResult(DataClassJsonMixin):
+            result: str
 
-        result: Optional[ChitchatResponse]
+        callChitchat: ChitchatResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str, history: List[Turn] = []) -> Optional[chitchatData.ChitchatResponse]:
+    def execute(cls, client: Client, input: str, history: List[Turn] = []) -> chitchatData.ChitchatResult:
         variables: Dict[str, Any] = {"input": input, "history": history}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
         res = cls.chitchatData.from_dict(response_text)
-        return res.result
+        return res.callChitchat
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str, history: List[Turn] = []) -> Optional[chitchatData.ChitchatResponse]:
+    async def execute_async(cls, client: Client, input: str, history: List[Turn] = []) -> chitchatData.ChitchatResult:
         variables: Dict[str, Any] = {"input": input, "history": history}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
         res = cls.chitchatData.from_dict(response_text)
-        return res.result
+        return res.callChitchat

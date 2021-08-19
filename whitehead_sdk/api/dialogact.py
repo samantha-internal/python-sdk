@@ -15,9 +15,9 @@ from dataclasses_json import DataClassJsonMixin, config
 
 # fmt: off
 QUERY: List[str] = ["""
-query renderCSS($ssml: String!, $css: String!) {
-  result: callApplyVoiceCSS(voice_css: $css, styled_ssml: $ssml) {
-    ssml
+query dialogact($input: String!) {
+  callDialogact(input: $input) {
+    result
   }
 }
 
@@ -25,33 +25,33 @@ query renderCSS($ssml: String!, $css: String!) {
 ]
 
 
-class renderCSS:
+class dialogact:
     @dataclass(frozen=True)
-    class renderCSSData(DataClassJsonMixin):
+    class dialogactData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class SSMLResult(DataClassJsonMixin):
-            ssml: Optional[str]
+        class DialogactResult(DataClassJsonMixin):
+            result: str
 
-        result: Optional[SSMLResult]
+        callDialogact: DialogactResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, ssml: str, css: str) -> Optional[renderCSSData.SSMLResult]:
-        variables: Dict[str, Any] = {"ssml": ssml, "css": css}
+    def execute(cls, client: Client, input: str) -> dialogactData.DialogactResult:
+        variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.renderCSSData.from_dict(response_text)
-        return res.result
+        res = cls.dialogactData.from_dict(response_text)
+        return res.callDialogact
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, ssml: str, css: str) -> Optional[renderCSSData.SSMLResult]:
-        variables: Dict[str, Any] = {"ssml": ssml, "css": css}
+    async def execute_async(cls, client: Client, input: str) -> dialogactData.DialogactResult:
+        variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.renderCSSData.from_dict(response_text)
-        return res.result
+        res = cls.dialogactData.from_dict(response_text)
+        return res.callDialogact

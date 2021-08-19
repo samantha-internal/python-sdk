@@ -12,13 +12,15 @@ from typing import Any, AsyncGenerator, Dict, List, Generator, Optional
 from time import perf_counter
 from dataclasses_json import DataClassJsonMixin, config
 
+from gql_client.runtime.enum_utils import enum_field_metadata
+from .enum.relation import Relation
+
 
 # fmt: off
 QUERY: List[str] = ["""
-query getSentiment($input: String!) {
-  result: callSentimentAnalysis(input: $input) {
-    label
-    score
+query relations($input: String!, $relation: Relation! = AtLocation) {
+  callRelations(input: $input, relation: $relation) {
+    result
   }
 }
 
@@ -26,34 +28,33 @@ query getSentiment($input: String!) {
 ]
 
 
-class getSentiment:
+class relations:
     @dataclass(frozen=True)
-    class getSentimentData(DataClassJsonMixin):
+    class relationsData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class SentimentAnalysisResult(DataClassJsonMixin):
-            label: Optional[str]
-            score: Optional[Number]
+        class RelationsResult(DataClassJsonMixin):
+            result: List[str]
 
-        result: Optional[List[SentimentAnalysisResult]]
+        callRelations: RelationsResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str) -> List[Optional[getSentimentData.SentimentAnalysisResult]]:
-        variables: Dict[str, Any] = {"input": input}
+    def execute(cls, client: Client, input: str, relation: Relation) -> relationsData.RelationsResult:
+        variables: Dict[str, Any] = {"input": input, "relation": relation}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.getSentimentData.from_dict(response_text)
-        return res.result
+        res = cls.relationsData.from_dict(response_text)
+        return res.callRelations
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str) -> List[Optional[getSentimentData.SentimentAnalysisResult]]:
-        variables: Dict[str, Any] = {"input": input}
+    async def execute_async(cls, client: Client, input: str, relation: Relation) -> relationsData.RelationsResult:
+        variables: Dict[str, Any] = {"input": input, "relation": relation}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.getSentimentData.from_dict(response_text)
-        return res.result
+        res = cls.relationsData.from_dict(response_text)
+        return res.callRelations

@@ -12,15 +12,13 @@ from typing import Any, AsyncGenerator, Dict, List, Generator, Optional
 from time import perf_counter
 from dataclasses_json import DataClassJsonMixin, config
 
-from .input.turn import Turn
-
 
 # fmt: off
 QUERY: List[str] = ["""
-query predictNextTurn($history: [Turn!]!, $input: [String!]!) {
-  result: callNextDialogTurn(history: $history, input: $input) {
-    nextTurns: result {
-      alternative
+query sentiment($input: String!) {
+  callSentiment(input: $input) {
+    result {
+      label
       score
     }
   }
@@ -30,38 +28,38 @@ query predictNextTurn($history: [Turn!]!, $input: [String!]!) {
 ]
 
 
-class predictNextTurn:
+class sentiment:
     @dataclass(frozen=True)
-    class predictNextTurnData(DataClassJsonMixin):
+    class sentimentData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class Result(DataClassJsonMixin):
+        class SentimentResult(DataClassJsonMixin):
             @dataclass(frozen=True)
-            class DialogAlternative(DataClassJsonMixin):
-                alternative: Optional[str]
-                score: Optional[Number]
+            class SentimentAnalysis(DataClassJsonMixin):
+                label: str
+                score: Number
 
-            nextTurns: Optional[List[DialogAlternative]]
+            result: List[SentimentAnalysis]
 
-        result: Optional[Result]
+        callSentiment: SentimentResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, history: List[Turn] = [], input: List[str] = []) -> Optional[predictNextTurnData.Result]:
-        variables: Dict[str, Any] = {"history": history, "input": input}
+    def execute(cls, client: Client, input: str) -> sentimentData.SentimentResult:
+        variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.predictNextTurnData.from_dict(response_text)
-        return res.result
+        res = cls.sentimentData.from_dict(response_text)
+        return res.callSentiment
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, history: List[Turn] = [], input: List[str] = []) -> Optional[predictNextTurnData.Result]:
-        variables: Dict[str, Any] = {"history": history, "input": input}
+    async def execute_async(cls, client: Client, input: str) -> sentimentData.SentimentResult:
+        variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.predictNextTurnData.from_dict(response_text)
-        return res.result
+        res = cls.sentimentData.from_dict(response_text)
+        return res.callSentiment

@@ -15,13 +15,9 @@ from dataclasses_json import DataClassJsonMixin, config
 
 # fmt: off
 QUERY: List[str] = ["""
-query answerMultipleChoice(
-  $input: String!
-  $context: String!
-  $choices: [String!]!
-) {
-  result: callQA(input: $input, context: $context, choices: $choices) {
-    answer: result
+query answer($input: String!, $context: String! = "") {
+  callAnswer(input: $input, context: $context) {
+    result
   }
 }
 
@@ -29,33 +25,33 @@ query answerMultipleChoice(
 ]
 
 
-class answerMultipleChoice:
+class answer:
     @dataclass(frozen=True)
-    class answerMultipleChoiceData(DataClassJsonMixin):
+    class answerData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class QA_Result(DataClassJsonMixin):
-            answer: str
+        class AnswerResult(DataClassJsonMixin):
+            result: str
 
-        result: Optional[QA_Result]
+        callAnswer: AnswerResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str, context: str, choices: List[str] = []) -> Optional[answerMultipleChoiceData.QA_Result]:
-        variables: Dict[str, Any] = {"input": input, "context": context, "choices": choices}
+    def execute(cls, client: Client, input: str, context: str) -> answerData.AnswerResult:
+        variables: Dict[str, Any] = {"input": input, "context": context}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.answerMultipleChoiceData.from_dict(response_text)
-        return res.result
+        res = cls.answerData.from_dict(response_text)
+        return res.callAnswer
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str, context: str, choices: List[str] = []) -> Optional[answerMultipleChoiceData.QA_Result]:
-        variables: Dict[str, Any] = {"input": input, "context": context, "choices": choices}
+    async def execute_async(cls, client: Client, input: str, context: str) -> answerData.AnswerResult:
+        variables: Dict[str, Any] = {"input": input, "context": context}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.answerMultipleChoiceData.from_dict(response_text)
-        return res.result
+        res = cls.answerData.from_dict(response_text)
+        return res.callAnswer

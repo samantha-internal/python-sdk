@@ -15,15 +15,11 @@ from dataclasses_json import DataClassJsonMixin, config
 
 # fmt: off
 QUERY: List[str] = ["""
-query classifyTopic($input: String!, $topics: [String!]!) {
-  result: callClassifyTopic(
-    input: $input
-    topics: $topics
-    allow_multiple: true
-  ) {
-    topics: result {
-      topic
+query topics($input: String = "", $allow_multiple: Boolean = false, $topics: [String!]!) {
+  callTopics(input: $input, allow_multiple: $allow_multiple, topics: $topics) {
+    result {
       score
+      topic
     }
   }
 }
@@ -32,38 +28,38 @@ query classifyTopic($input: String!, $topics: [String!]!) {
 ]
 
 
-class classifyTopic:
+class topics:
     @dataclass(frozen=True)
-    class classifyTopicData(DataClassJsonMixin):
+    class topicsData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class ClassificationResult(DataClassJsonMixin):
+        class TopicsResult(DataClassJsonMixin):
             @dataclass(frozen=True)
             class TopicScore(DataClassJsonMixin):
-                topic: str
                 score: Number
+                topic: str
 
-            topics: Optional[List[TopicScore]]
+            result: List[TopicScore]
 
-        result: Optional[ClassificationResult]
+        callTopics: TopicsResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str, topics: List[str] = []) -> Optional[classifyTopicData.ClassificationResult]:
-        variables: Dict[str, Any] = {"input": input, "topics": topics}
+    def execute(cls, client: Client, input: Optional[str] = None, allow_multiple: Optional[bool] = None, topics: List[str] = []) -> topicsData.TopicsResult:
+        variables: Dict[str, Any] = {"input": input, "allow_multiple": allow_multiple, "topics": topics}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.classifyTopicData.from_dict(response_text)
-        return res.result
+        res = cls.topicsData.from_dict(response_text)
+        return res.callTopics
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str, topics: List[str] = []) -> Optional[classifyTopicData.ClassificationResult]:
-        variables: Dict[str, Any] = {"input": input, "topics": topics}
+    async def execute_async(cls, client: Client, input: Optional[str] = None, allow_multiple: Optional[bool] = None, topics: List[str] = []) -> topicsData.TopicsResult:
+        variables: Dict[str, Any] = {"input": input, "allow_multiple": allow_multiple, "topics": topics}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.classifyTopicData.from_dict(response_text)
-        return res.result
+        res = cls.topicsData.from_dict(response_text)
+        return res.callTopics

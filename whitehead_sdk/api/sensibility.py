@@ -12,13 +12,16 @@ from typing import Any, AsyncGenerator, Dict, List, Generator, Optional
 from time import perf_counter
 from dataclasses_json import DataClassJsonMixin, config
 
+from .input.turn import Turn
+
 
 # fmt: off
 QUERY: List[str] = ["""
-query speechToText($input: String!) {
-  result: callSpeechToText(audioB64: $input) {
-    alternatives {
-      transcript
+query sensibility($input: [String!]!, $history: [Turn!]!) {
+  callSensibility(input: $input, history: $history) {
+    result {
+      alternative
+      score
     }
   }
 }
@@ -27,37 +30,38 @@ query speechToText($input: String!) {
 ]
 
 
-class speechToText:
+class sensibility:
     @dataclass(frozen=True)
-    class speechToTextData(DataClassJsonMixin):
+    class sensibilityData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class STTResult(DataClassJsonMixin):
+        class SensibilityResult(DataClassJsonMixin):
             @dataclass(frozen=True)
-            class TextAlternative(DataClassJsonMixin):
-                transcript: Optional[str]
+            class DialogAlternative(DataClassJsonMixin):
+                alternative: str
+                score: Number
 
-            alternatives: Optional[List[TextAlternative]]
+            result: List[DialogAlternative]
 
-        result: Optional[List[STTResult]]
+        callSensibility: SensibilityResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str) -> List[Optional[speechToTextData.STTResult]]:
-        variables: Dict[str, Any] = {"input": input}
+    def execute(cls, client: Client, input: List[str] = [], history: List[Turn] = []) -> sensibilityData.SensibilityResult:
+        variables: Dict[str, Any] = {"input": input, "history": history}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.speechToTextData.from_dict(response_text)
-        return res.result
+        res = cls.sensibilityData.from_dict(response_text)
+        return res.callSensibility
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str) -> List[Optional[speechToTextData.STTResult]]:
-        variables: Dict[str, Any] = {"input": input}
+    async def execute_async(cls, client: Client, input: List[str] = [], history: List[Turn] = []) -> sensibilityData.SensibilityResult:
+        variables: Dict[str, Any] = {"input": input, "history": history}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.speechToTextData.from_dict(response_text)
-        return res.result
+        res = cls.sensibilityData.from_dict(response_text)
+        return res.callSensibility

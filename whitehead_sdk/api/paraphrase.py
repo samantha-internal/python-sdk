@@ -12,15 +12,12 @@ from typing import Any, AsyncGenerator, Dict, List, Generator, Optional
 from time import perf_counter
 from dataclasses_json import DataClassJsonMixin, config
 
-from gql_client.runtime.enum_utils import enum_field_metadata
-from .enum.relation import Relation
-
 
 # fmt: off
 QUERY: List[str] = ["""
-query getConceptnetRelations($input: String!, $relation: Relation!) {
-  result: callPredictRelation(input: $input, relation: $relation) {
-    predictions: result
+query paraphrase($input: String!) {
+  callParaphrase(input: $input) {
+    result
   }
 }
 
@@ -28,33 +25,33 @@ query getConceptnetRelations($input: String!, $relation: Relation!) {
 ]
 
 
-class getConceptnetRelations:
+class paraphrase:
     @dataclass(frozen=True)
-    class getConceptnetRelationsData(DataClassJsonMixin):
+    class paraphraseData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class RelationResult(DataClassJsonMixin):
-            predictions: Optional[List[str]]
+        class ParaphraseResult(DataClassJsonMixin):
+            result: List[str]
 
-        result: Optional[RelationResult]
+        callParaphrase: ParaphraseResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str, relation: Relation) -> Optional[getConceptnetRelationsData.RelationResult]:
-        variables: Dict[str, Any] = {"input": input, "relation": relation}
+    def execute(cls, client: Client, input: str) -> paraphraseData.ParaphraseResult:
+        variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.getConceptnetRelationsData.from_dict(response_text)
-        return res.result
+        res = cls.paraphraseData.from_dict(response_text)
+        return res.callParaphrase
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str, relation: Relation) -> Optional[getConceptnetRelationsData.RelationResult]:
-        variables: Dict[str, Any] = {"input": input, "relation": relation}
+    async def execute_async(cls, client: Client, input: str) -> paraphraseData.ParaphraseResult:
+        variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.getConceptnetRelationsData.from_dict(response_text)
-        return res.result
+        res = cls.paraphraseData.from_dict(response_text)
+        return res.callParaphrase

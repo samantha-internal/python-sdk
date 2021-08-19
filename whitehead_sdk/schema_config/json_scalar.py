@@ -6,4 +6,5 @@ custom_scalars: Dict[str, CustomScalar] = {
         name="JSON",
         type=dict,
     ),
+    "Base64": CustomScalar(name="Base64", type=str),
 }

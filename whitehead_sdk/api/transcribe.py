@@ -15,9 +15,9 @@ from dataclasses_json import DataClassJsonMixin, config
 
 # fmt: off
 QUERY: List[str] = ["""
-query paraphraseSentence($input: String!) {
-  result: callParaphraseSentence(input: $input) {
-    paraphrases: result
+query transcribe($input: Base64!) {
+  callTranscribe(input: $input) {
+    result
   }
 }
 
@@ -25,33 +25,33 @@ query paraphraseSentence($input: String!) {
 ]
 
 
-class paraphraseSentence:
+class transcribe:
     @dataclass(frozen=True)
-    class paraphraseSentenceData(DataClassJsonMixin):
+    class transcribeData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class Paraphrase(DataClassJsonMixin):
-            paraphrases: Optional[List[str]]
+        class TranscribeResult(DataClassJsonMixin):
+            result: str
 
-        result: Optional[Paraphrase]
+        callTranscribe: TranscribeResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str) -> Optional[paraphraseSentenceData.Paraphrase]:
+    def execute(cls, client: Client, input: str) -> transcribeData.TranscribeResult:
         variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.paraphraseSentenceData.from_dict(response_text)
-        return res.result
+        res = cls.transcribeData.from_dict(response_text)
+        return res.callTranscribe
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str) -> Optional[paraphraseSentenceData.Paraphrase]:
+    async def execute_async(cls, client: Client, input: str) -> transcribeData.TranscribeResult:
         variables: Dict[str, Any] = {"input": input}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.paraphraseSentenceData.from_dict(response_text)
-        return res.result
+        res = cls.transcribeData.from_dict(response_text)
+        return res.callTranscribe

@@ -15,9 +15,9 @@ from dataclasses_json import DataClassJsonMixin, config
 
 # fmt: off
 QUERY: List[str] = ["""
-query answerQuestion($input: String!, $context: String!, $min_length: Int!) {
-  result: callQA(input: $input, context: $context, min_length: $min_length) {
-    answer: result
+query choose($input: String!, $context: String! = "", $choices: [String!]!) {
+  callAnswer(input: $input, choices: $choices, context: $context) {
+    result
   }
 }
 
@@ -25,33 +25,33 @@ query answerQuestion($input: String!, $context: String!, $min_length: Int!) {
 ]
 
 
-class answerQuestion:
+class choose:
     @dataclass(frozen=True)
-    class answerQuestionData(DataClassJsonMixin):
+    class chooseData(DataClassJsonMixin):
         @dataclass(frozen=True)
-        class QA_Result(DataClassJsonMixin):
-            answer: str
+        class AnswerResult(DataClassJsonMixin):
+            result: str
 
-        result: Optional[QA_Result]
+        callAnswer: AnswerResult
 
     # fmt: off
     @classmethod
-    def execute(cls, client: Client, input: str, context: str, min_length: int) -> Optional[answerQuestionData.QA_Result]:
-        variables: Dict[str, Any] = {"input": input, "context": context, "min_length": min_length}
+    def execute(cls, client: Client, input: str, context: str, choices: List[str] = []) -> chooseData.AnswerResult:
+        variables: Dict[str, Any] = {"input": input, "context": context, "choices": choices}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = client.execute(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.answerQuestionData.from_dict(response_text)
-        return res.result
+        res = cls.chooseData.from_dict(response_text)
+        return res.callAnswer
 
     # fmt: off
     @classmethod
-    async def execute_async(cls, client: Client, input: str, context: str, min_length: int) -> Optional[answerQuestionData.QA_Result]:
-        variables: Dict[str, Any] = {"input": input, "context": context, "min_length": min_length}
+    async def execute_async(cls, client: Client, input: str, context: str, choices: List[str] = []) -> chooseData.AnswerResult:
+        variables: Dict[str, Any] = {"input": input, "context": context, "choices": choices}
         new_variables = encode_variables(variables, custom_scalars)
         response_text = await client.execute_async(
             gql("".join(set(QUERY))), variable_values=new_variables
         )
-        res = cls.answerQuestionData.from_dict(response_text)
-        return res.result
+        res = cls.chooseData.from_dict(response_text)
+        return res.callAnswer

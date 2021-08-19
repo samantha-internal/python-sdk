@@ -9,11 +9,8 @@ from typing import Any, AsyncGenerator, Dict, List, Generator, Optional
 
 from dataclasses_json import DataClassJsonMixin, config
 
-from gql_client.runtime.enum_utils import enum_field_metadata
-from ..enum.agent import Agent
-
 
 @dataclass(frozen=True)
 class Turn(DataClassJsonMixin):
-    agent: Optional[Agent] = None
-    said: Optional[str] = None
+    bot: Optional[str] = None
+    user: Optional[str] = None
