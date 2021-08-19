@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, BinaryIO
 from gql.client import Client
 from .api.answer import answer as _answer
 from .api.chitchat import chitchat as _chitchat
@@ -37,11 +37,11 @@ class GraphqlClient(Client):
     def similarity(
         self, input: str, candidates: List[str] = []
     ) -> Optional[_similarity.similarityData.SimilarityResult]: ...
-    def speak(self, Client, input: str) -> _speak.speakData.SpeakResult: ...
+    def speak(self, input: str, output: BinaryIO) -> None: ...
     def topics(
         self,
         input: Optional[str] = None,
         allow_multiple: Optional[bool] = None,
         topics: List[str] = [],
     ) -> _topics.topicsData.TopicsResult: ...
-    def transcribe(self, input: str) -> _transcribe.transcribeData.TranscribeResult: ...
+    def transcribe(self, input: BinaryIO) -> _transcribe.transcribeData.TranscribeResult: ...
