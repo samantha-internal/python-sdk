@@ -23,14 +23,14 @@ def test_answer(client):
 
 def test_chitchat(client):
     result = client.chitchat(
-        "good bye", [Turn(bot="hi"), Turn(user="hello"), Turn(bot="howdy?")]
+        "good bye", [{"bot": "hi"}, {"user": "hello"}, {"bot": "howdy?"}]
     )
     assert result == "bye"
 
 
 def test_chitchat_missing_bot_turn(client):
     try:
-        client.chitchat("good bye", [Turn(bot="hi"), Turn(user="hello")])
+        client.chitchat("good bye", [{"bot": "hi"}, {"user": "hello"}])
     except TransportQueryError:
         assert True
     except Exception:
@@ -79,10 +79,10 @@ def test_relations(client):
 
 def test_sensibility(client):
     result = client.sensibility(
-        ["fine", "bye"], [Turn(user="hi"), Turn(bot="hi there"), Turn(user="howdy?")]
+        ["fine", "bye"], [{"user": "hi"}, {"bot": "hi there"}, {"user": "howdy?"}]
     )
-    alts = {a.alternative for a in result}
-    scores = [a.score for a in result]
+    alts = {a["alternative"] for a in result}
+    scores = [a["score"] for a in result]
     assert len(alts) == 2
     assert alts == {"fine", "bye"}
     assert all([isinstance(s, float) for s in scores])
@@ -91,8 +91,8 @@ def test_sensibility(client):
 def test_sentiment(client):
     result = client.sentiment("I feel good")
     assert len(result) == 1
-    assert result[0].label == "positive"
-    assert result[0].score >= 0.9
+    assert result[0]["label"] == "positive"
+    assert result[0]["score"] >= 0.9
 
 
 def test_similarity(client):
@@ -101,12 +101,12 @@ def test_similarity(client):
         ["I would like to have a pie", "I don't want pizza", "I want taco"],
     )
     assert len(result) == 3
-    assert result[0].candidate == "I would like to have a pie"
-    assert result[0].score >= 0.9
-    assert result[1].candidate == "I don't want pizza"
-    assert result[1].score <= 0.5
-    assert result[2].candidate == "I want taco"
-    assert result[2].score <= 0.5
+    assert result[0]["candidate"] == "I would like to have a pie"
+    assert result[0]["score"] >= 0.9
+    assert result[1]["candidate"] == "I don't want pizza"
+    assert result[1]["score"] <= 0.5
+    assert result[2]["candidate"] == "I want taco"
+    assert result[2]["score"] <= 0.5
 
 
 def test_speak_and_transcribe(client):
@@ -120,7 +120,7 @@ def test_speak_and_transcribe(client):
 def test_topics(client):
     result = client.topics("hi", allow_multiple=True, topics=["greeting", "food"])
     assert len(result) == 2
-    assert result[0].topic == "greeting"
-    assert result[0].score >= 0.5
-    assert result[1].topic == "food"
-    assert result[1].score <= 0.5
+    assert result[0]["topic"] == "greeting"
+    assert result[0]["score"] >= 0.5
+    assert result[1]["topic"] == "food"
+    assert result[1]["score"] <= 0.5

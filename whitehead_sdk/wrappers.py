@@ -4,6 +4,7 @@ from base64 import b64encode, b64decode
 from functools import partial
 from gql.client import Client
 from . import api
+from .api.input.turn import Turn
 
 
 def wrapper(self, func):
@@ -33,6 +34,33 @@ class GraphqlClient(Client):
             for name, method in self.__class__.__dict__.items()
             if name.startswith("_wrap_")
         }
+
+    def _wrap_similarity(self, orig_method):
+        def wrapper(*args, **kwargs):
+            result = orig_method(*args, **kwargs)
+            if not result:
+                return
+            return [s.to_dict() for s in result]
+
+        return wrapper
+
+    _wrap_sentiment = _wrap_similarity
+    _wrap_topics = _wrap_similarity
+
+    def _wrap_chitchat(self, orig_method):
+        def wrapper(input, history):
+            return orig_method(input, [Turn.from_dict(h) for h in history])
+
+        return wrapper
+
+    def _wrap_sensibility(self, orig_method):
+        def wrapper(input, history):
+            return [
+                alt.to_dict()
+                for alt in orig_method(input, [Turn.from_dict(h) for h in history])
+            ]
+
+        return wrapper
 
     def _wrap_speak(self, orig_method):
         def wrapper(input, stream):
