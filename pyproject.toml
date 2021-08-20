@@ -20,6 +20,9 @@ portalocker = "^2.3.0"
 pywin32 = {version = "==228", markers="sys_platform == 'win32'"}
 
 
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
