@@ -12,20 +12,20 @@ from whitehead_sdk.api.enum.relation import Relation
 @pytest.fixture(scope="module")
 def client():
     return authenticate(
-        os.environ["WHITEHEAD_API_KEY"], os.environ["WHITEHEAD_DEVELOPER_ID"]
+        os.environ["WHITEHEAD_API_KEY"], int(os.environ["WHITEHEAD_DEVELOPER_ID"])
     )
 
 
 def test_answer(client):
     result = client.answer("hello", "hi")
-    assert result.result == "hello"
+    assert result == "hello"
 
 
 def test_chitchat(client):
     result = client.chitchat(
         "good bye", [Turn(bot="hi"), Turn(user="hello"), Turn(bot="howdy?")]
     )
-    assert result.result == "bye"
+    assert result == "bye"
 
 
 def test_chitchat_missing_bot_turn(client):
@@ -41,17 +41,17 @@ def test_chitchat_missing_bot_turn(client):
 
 def test_choose(client):
     result = client.choose("pizza", "I want to order pizza", ["order", "hi", "hello"])
-    assert result.result == "order"
+    assert result == "order"
 
 
 def test_dialogact(client):
     result = client.dialogact("hi there")
-    assert result.result == "Conventional-opening"
+    assert result == "Conventional-opening"
 
 
 def test_paraphrase(client):
     result = client.paraphrase("I like pizza")
-    assert set(result.result) == {
+    assert set(result) == {
         "I like pizza.",
         "I enjoy pizza.",
         "I like to eat pizza.",
@@ -63,7 +63,7 @@ def test_paraphrase(client):
 
 def test_relations(client):
     result = client.relations("pizza", Relation.IsA)
-    assert set(result.result) == {
+    assert set(result) == {
         "food",
         "pizza",
         "fast food",
@@ -81,8 +81,8 @@ def test_sensibility(client):
     result = client.sensibility(
         ["fine", "bye"], [Turn(user="hi"), Turn(bot="hi there"), Turn(user="howdy?")]
     )
-    alts = {a.alternative for a in result.result}
-    scores = [a.score for a in result.result]
+    alts = {a.alternative for a in result}
+    scores = [a.score for a in result]
     assert len(alts) == 2
     assert alts == {"fine", "bye"}
     assert all([isinstance(s, float) for s in scores])
@@ -90,9 +90,9 @@ def test_sensibility(client):
 
 def test_sentiment(client):
     result = client.sentiment("I feel good")
-    assert len(result.result) == 1
-    assert result.result[0].label == "positive"
-    assert result.result[0].score >= 0.9
+    assert len(result) == 1
+    assert result[0].label == "positive"
+    assert result[0].score >= 0.9
 
 
 def test_similarity(client):
@@ -100,13 +100,13 @@ def test_similarity(client):
         "I want pizza",
         ["I would like to have a pie", "I don't want pizza", "I want taco"],
     )
-    assert len(result.result) == 3
-    assert result.result[0].candidate == "I would like to have a pie"
-    assert result.result[0].score >= 0.9
-    assert result.result[1].candidate == "I don't want pizza"
-    assert result.result[1].score <= 0.5
-    assert result.result[2].candidate == "I want taco"
-    assert result.result[2].score <= 0.5
+    assert len(result) == 3
+    assert result[0].candidate == "I would like to have a pie"
+    assert result[0].score >= 0.9
+    assert result[1].candidate == "I don't want pizza"
+    assert result[1].score <= 0.5
+    assert result[2].candidate == "I want taco"
+    assert result[2].score <= 0.5
 
 
 def test_speak_and_transcribe(client):
@@ -114,13 +114,13 @@ def test_speak_and_transcribe(client):
     client.speak("hi", stream)
     stream.seek(0)
     result = client.transcribe(stream)
-    assert result.result in ("I",)
+    assert result in ("I",)
 
 
 def test_topics(client):
     result = client.topics("hi", allow_multiple=True, topics=["greeting", "food"])
-    assert len(result.result) == 2
-    assert result.result[0].topic == "greeting"
-    assert result.result[0].score >= 0.5
-    assert result.result[1].topic == "food"
-    assert result.result[1].score <= 0.5
+    assert len(result) == 2
+    assert result[0].topic == "greeting"
+    assert result[0].score >= 0.5
+    assert result[1].topic == "food"
+    assert result[1].score <= 0.5

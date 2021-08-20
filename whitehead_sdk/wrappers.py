@@ -8,7 +8,10 @@ from . import api
 
 def wrapper(self, func):
     def inner(*args, **kwargs):
-        return func(self, *args, **kwargs)
+        result = func(self, *args, **kwargs)
+        if hasattr(result, "result"):
+            result = result.result
+        return result
 
     return inner
 
@@ -39,7 +42,7 @@ class GraphqlClient(Client):
 
     def _wrap_transcribe(self, orig_method):
         def wrapper(client, input):
-            return orig_method(client, b64encode(input.read()).decode())
+            return orig_method(client, b64encode(input.read()).decode()).result
 
         return wrapper
 
