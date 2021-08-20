@@ -35,14 +35,14 @@ class GraphqlClient(Client):
         }
 
     def _wrap_speak(self, orig_method):
-        def wrapper(client, input, stream):
-            return stream.write(b64decode(orig_method(client, input).result))
+        def wrapper(input, stream):
+            return stream.write(b64decode(orig_method(input)))
 
         return wrapper
 
     def _wrap_transcribe(self, orig_method):
-        def wrapper(client, input):
-            return orig_method(client, b64encode(input.read()).decode()).result
+        def wrapper(input):
+            return orig_method(b64encode(input.read()).decode())
 
         return wrapper
 
@@ -50,9 +50,9 @@ class GraphqlClient(Client):
         try:
             custom_wrapper = self.custom_wrappers.get(name)
             method = self._api_map[name]
-            return wrapper(
-                self,
-                method if not custom_wrapper else custom_wrapper(method),
-            )
+            if not custom_wrapper:
+                return wrapper(self, method)
+            else:
+                return custom_wrapper(wrapper(self, method))
         except KeyError:
             raise AttributeError(name)
