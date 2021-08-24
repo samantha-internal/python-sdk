@@ -17,8 +17,8 @@ def client():
 
 
 def test_answer(client):
-    result = client.answer("hello", "hi")
-    assert result == "hello"
+    result = client.answer("What color is the apple?", "The apple is red")
+    assert result == "red"
 
 
 def test_chitchat(client):
@@ -40,8 +40,8 @@ def test_chitchat_missing_bot_turn(client):
 
 
 def test_choose(client):
-    result = client.choose("pizza", "I want to order pizza", ["order", "hi", "hello"])
-    assert result == "order"
+    result = client.choose("What color is the apple?", "The apple is red", ["big", "red", "blue"])
+    assert result == "red"
 
 
 def test_dialogact(client):
